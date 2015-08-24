@@ -95,8 +95,8 @@ write_csv(submission, "submit_CART.csv")
 ----
 #########################  4Th Submission-BAGGING--SCORe--0.3495 ######################################
 
-#mtry is no. of variables chosen randomly at each split in Bagging
-rf <- randomForest(Hazard ~ ., mtrain, ntree=501, mtry=4)
+#mtry is no. of variables chosen randomly at each split. Since all the indep vars are being used, it's bagging
+rf <- randomForest(Hazard ~ ., mtrain, ntree=501, mtry=32)
 
 predict_test = predict(rf,mtest)
 
