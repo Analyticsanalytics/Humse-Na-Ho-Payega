@@ -1,0 +1,124 @@
+#the Excel sheet is in my google drive. Train and test data
+
+
+#########
+
+
+# The readr library is the best way to read and write CSV files in R. It converts char vars into
+#factor vars faster than read.csv
+library(readr)
+library(randomForest)
+library(Metrics)
+
+train = read_csv(file= "C:\\Users\\admin\\Desktop\\Kaggle Competition\\train.csv")
+test = read_csv(file= "C:\\Users\\admin\\Desktop\\Kaggle Competition\\test.csv")
+names(train)
+
+#Checking if there is any null values
+length(train[is.na(train)])
+length(test[is.na(test)])
+
+class(train$Hazard)
+
+
+#Create a new dataframe ID using test$Id for submission later
+Id = test$Id
+
+#Removing the 1st column ie.ID since it's no use to us
+train = train[,2:ncol(train)]
+test = test[,2:ncol(test)]
+str(train)
+#model.matrix creates a design matrix from the description given in terms(object).Any character
+#variables are coerced to factors (0 or 1) by creating new variables. We're using it here to conver char var into factors
+mtrain = model.matrix(~.,train)
+
+#Making data frame of the matrix
+mtrain = as.data.frame(mtrain)
+str(mtrain)
+#Removng the 1st column which is Intercept created due to dataframe
+mtrain = mtrain[,c(-1)]
+
+mtest = model.matrix(~.,test)
+mtest = as.data.frame(mtest)
+mtest = mtest[,c(-1)]
+
+################RandomFores---SCORE-34.5%    ###############################
+#start random forest
+rffit = randomForest(Hazard ~ .,mtrain,ntree=170, imp=TRUE, sampsize=10000, do.trace=TRUE)
+predict_test = predict(rffit,mtest)
+
+submission = data.frame(Id)
+submission$Hazard = predict(rffit,mtest)
+write_csv(submission, "submit_rf1.csv")
+
+---
+###########################2ND SUBMISSION---SCORE  37.07%  #####################################
+
+rf <- randomForest(Hazard ~ ., mtrain, ntree=500, nodesize=50)
+predict_test = predict(rf,mtest)
+
+submission = data.frame(Id)
+submission$Hazard = predict(rf,mtest)
+write_csv(submission, "submit_rf2.csv")
+---
+###
+######## 3rd SUBMISSION----REGRESSION TREES USING CROSS VALIDATION--SCORE-0.27  ######################
+
+#We need to load caret & e1071 packages to use cross-validation
+library(lattice)
+library(ggplot2)
+library(caret)
+library(e1071)
+library(rpart)
+library(rpart.plot)
+#Deciding how many folds we wanna use. 5 folds we wanna use. CV means cross validation
+numFolds = trainControl(method="cv", number=5)
+summary(numFolds)
+
+
+#Possible values of cp parameters using expand.grid function. From 0.0002 to 0.1 with increment of 0.0002
+cpGrid = expand.grid(.cp=seq(0.0002, 0.01, 0.0002)) 
+
+train(Hazard ~ ., data=mtrain, method="rpart", trControl=numFolds, tuneGrid=cpGrid)
+
+#We're creating a new CART model using this cp value instead of minbucket parameter
+CART = rpart(Hazard ~ ., data=mtrain, cp=0.002)
+PredictCV = predict(CART, newdata=mtest)
+prp(CART)
+
+submission = data.frame(Id)
+submission$Hazard = predict(CART,mtest)
+write_csv(submission, "submit_CART.csv")
+----
+#########################  4Th Submission---SCORe--0.3495 ######################################
+
+#mtry is no. of variables chosen randomly at each split
+rf <- randomForest(Hazard ~ ., mtrain, ntree=501, mtry=4)
+
+predict_test = predict(rf,mtest)
+
+submission = data.frame(Id)
+submission$Hazard = predict(rf,mtest)
+write_csv(submission, "submit_rf.csv")
+---
+##############5th SUBMISSION---GBM--SCORe-0.366###################
+###Score  0.3528 with shrinkage=0.001
+require(gbm)
+boost.rf= gbm(Hazard~.,data=mtrain ,distribution="gaussian",n.trees=10000,shrinkage=0.01,interaction.depth=4)
+predmat=predict(boost.rf,newdata = mtest, n.trees=boost.rf$n.trees)
+
+submission = data.frame(Id)
+Mysubmission = data.frame(submission, predmat)
+colnames(Mysubmission) = c("ID", "Hazard")
+write_csv(Mysubmission, "submit_boost.csv")
+---
+
+##############5th SUBMISSION---GBM--SCORe-0.366###################
+require(gbm)
+boost.rf= gbm(Hazard~.,data=mtrain ,distribution="gaussian",n.trees=11000,shrinkage=0.01,interaction.depth=3)
+predmat=predict(boost.rf,newdata = mtest, n.trees=boost.rf$n.trees)
+
+submission = data.frame(Id)
+Mysubmission = data.frame(submission, predmat)
+colnames(Mysubmission) = c("ID", "Hazard")
+write_csv(Mysubmission, "submit_boost.csv")
