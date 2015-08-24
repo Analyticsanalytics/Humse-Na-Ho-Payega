@@ -1,5 +1,5 @@
 #the Excel sheet is in my google drive. Train and test data
-
+#train has 51,000 observation with 32 variables. test has equal observations & variables
 
 #########
 
@@ -28,6 +28,7 @@ Id = test$Id
 train = train[,2:ncol(train)]
 test = test[,2:ncol(test)]
 str(train)
+
 #model.matrix creates a design matrix from the description given in terms(object).Any character
 #variables are coerced to factors (0 or 1) by creating new variables. We're using it here to conver char var into factors
 mtrain = model.matrix(~.,train)
@@ -35,9 +36,11 @@ mtrain = model.matrix(~.,train)
 #Making data frame of the matrix
 mtrain = as.data.frame(mtrain)
 str(mtrain)
+
 #Removng the 1st column which is Intercept created due to dataframe
 mtrain = mtrain[,c(-1)]
 
+#same treatment for testset
 mtest = model.matrix(~.,test)
 mtest = as.data.frame(mtest)
 mtest = mtest[,c(-1)]
