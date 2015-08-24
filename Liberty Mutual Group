@@ -93,9 +93,9 @@ submission = data.frame(Id)
 submission$Hazard = predict(CART,mtest)
 write_csv(submission, "submit_CART.csv")
 ----
-#########################  4Th Submission---SCORe--0.3495 ######################################
+#########################  4Th Submission-BAGGING--SCORe--0.3495 ######################################
 
-#mtry is no. of variables chosen randomly at each split
+#mtry is no. of variables chosen randomly at each split in Bagging
 rf <- randomForest(Hazard ~ ., mtrain, ntree=501, mtry=4)
 
 predict_test = predict(rf,mtest)
