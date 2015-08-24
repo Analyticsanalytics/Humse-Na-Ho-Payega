@@ -117,8 +117,13 @@ write_csv(Mysubmission, "submit_boost.csv")
 ---
 
 ##############5th SUBMISSION---GBM--SCORe-0.366###################
+#We've used gaussian distribution for gbm since it's a regression. For classication with gmb, we use = distribution="bernaolli"
+#n.tree=11000 means we want 11k trees. int.depth means depth of tree should be limited to 4.
+
 require(gbm)
 boost.rf= gbm(Hazard~.,data=mtrain ,distribution="gaussian",n.trees=11000,shrinkage=0.01,interaction.depth=3)
+summary(boost.rf) #it will show the relative inlfuence statistics
+
 predmat=predict(boost.rf,newdata = mtest, n.trees=boost.rf$n.trees)
 
 submission = data.frame(Id)
