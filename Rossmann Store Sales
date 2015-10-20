@@ -70,7 +70,7 @@ submission = data.frame(Id = test$Id, Sales = PredTest)
 write_csv(submission, "Reg1.csv",)
 
 
-########LINEAR REGRESSION WITH IMPUTATION--------SCORE--62%  #######################
+########LINEAR REGRESSION WITH IMPUTATION--------SCORE--73%  #######################
 
 library(readr)
 
@@ -78,7 +78,7 @@ library(readr)
 #Removing the CUstomer variables from train since it's not there in test set
 #Merging the training and testing set that with the store dataset and call em mtrain & mtest
 # Converting NA values to zero in training and testing set
-# looking at only stores that were open in the train set may change this later
+# Taking all the stores into consideration. Not only those stores which are open.
 # seperating out the elements of the date column for the train set
 # removing the date column (since elements are extracted) and also StateHoliday which has a lot of NAs (may add it back in later)
 # seperating out the elements of the date column for the test set
