@@ -1,0 +1,128 @@
+
+#######################LINEAR REGRESSION-----SCORE 56%  ################
+
+library(readr) #readr makes it easier to read and write heavy files
+train = read_csv(file = "C:\\Users\\admin\\Desktop\\Kaggle Competition\\Rossman\\train.csv")
+test = read_csv(file = "C:\\Users\\admin\\Desktop\\Kaggle Competition\\Rossman\\test.csv")
+store = read_csv(file = "C:\\Users\\admin\\Desktop\\Kaggle Competition\\Rossman\\store.csv")
+
+#Removing the Customer variable from trainset since it's not there in test set
+train$Customers = NULL
+
+#Merging the training and testing set that with the store dataset
+mtrain = merge(train, store)
+mtest = merge(test, store)
+
+#NO. of missiing values
+length(mtrain[is.na(mtrain)])
+length(mtest[is.na(mtest)])
+
+# There are some missing  values (NA)in integar columns. Converting these values to zero. 
+mtrain[is.na(mtrain)] = 0
+mtest[is.na(mtest)] = 0
+str(mtrain)
+str(mtest)
+
+# looking at only stores that were open in the train set may change this later
+mtrain <- mtrain[ which(mtrain$Open=='1'),]
+
+
+# seperating out the elements of the date column for the train set
+mtrain$month = as.integer(format(mtrain$Date, "%m"))
+mtrain$year = as.integer(format(mtrain$Date, "%y"))
+mtrain$day = as.integer(format(mtrain$Date, "%d"))
+
+# removing the date column (since elements are extracted) and also StateHoliday which has a lot of NAs (may add it back in later)
+mtrain$Date = NULL
+
+
+#Same treatment for test set data
+mtest$month = as.integer(format(mtest$Date, "%m"))
+mtest$year = as.integer(format(mtest$Date, "%y"))
+mtest$day = as.integer(format(mtest$Date, "%d"))
+mtest$Date = NULL
+str(mtest)
+
+
+#model.matrix creates a design matrix from the description given in terms(object).Any character variables are 
+#coerced to binary (0 or 1) by creating new variables. We're using it here to conver char var into binary vectors
+library(Metrics)
+mtrain = model.matrix(~.,mtrain)
+
+#Making data frame of the matrix
+mtrain = as.data.frame(mtrain)
+str(mtrain)
+
+#Same treatment for test set
+mtest = model.matrix(~.,mtest)
+mtest = as.data.frame(mtest)
+str(mtest)
+
+
+#Removng the 1st column which is Intercept created due to dataframe
+mtrain = mtrain[,c(-1)]
+mtest = mtest[,c(-1)]
+
+#Making the linear Model
+RG1 = lm(Sales ~ ., data = mtrain)
+PredTest = predict(RG1, newdata = mtest)
+submission = data.frame(Id = test$Id, Sales = PredTest)
+write_csv(submission, "Reg1.csv",)
+
+
+########LINEAR REGRESSION WITH IMPUTATION--------SCORE--62%  #######################
+
+library(readr)
+
+#Laoding the train, test and store dataset
+#Removing the CUstomer variables from train since it's not there in test set
+#Merging the training and testing set that with the store dataset and call em mtrain & mtest
+# Converting NA values to zero in training and testing set
+# looking at only stores that were open in the train set may change this later
+# seperating out the elements of the date column for the train set
+# removing the date column (since elements are extracted) and also StateHoliday which has a lot of NAs (may add it back in later)
+# seperating out the elements of the date column for the test set
+# removing the date column (since elements are extracted) 
+
+
+# imputation to the mean since there are so many zero values(assuming 0 is missing value and not actual zero)
+mtrain$CompetitionOpenSinceMonth[mtrain$CompetitionOpenSinceMonth==0] = mean(mtrain$CompetitionOpenSinceMonth, na.rm=TRUE)
+mtrain$CompetitionOpenSinceYear[mtrain$CompetitionOpenSinceYear==0] = mean(mtrain$CompetitionOpenSinceYear, na.rm=TRUE)
+mtrain$Promo2SinceWeek[mtrain$Promo2SinceWeek==0] = mean(mtrain$Promo2SinceWeek, na.rm=TRUE)
+mtrain$Promo2SinceYear[mtrain$Promo2SinceYear==0] = mean(mtrain$Promo2SinceYear, na.rm=TRUE)
+
+#Imputation to the mean for test set as well
+mtest$CompetitionOpenSinceMonth[mtest$CompetitionOpenSinceMonth==0] = mean(mtest$CompetitionOpenSinceMonth, na.rm=TRUE)
+mtest$CompetitionOpenSinceYear[mtest$CompetitionOpenSinceYear==0] = mean(mtest$CompetitionOpenSinceYear, na.rm=TRUE)
+mtest$Promo2SinceWeek[mtest$Promo2SinceWeek==0] = mean(mtest$Promo2SinceWeek, na.rm=TRUE)
+mtest$Promo2SinceYear[mtest$Promo2SinceYear==0] = mean(mtest$Promo2SinceYear, na.rm=TRUE)
+
+
+#model.matrix creates a design matrix from the description given in terms(object).Any character variables are 
+#coerced to binary (0 or 1) by creating new variables. We're using it here to conver char var into binary vectors
+library(Metrics)
+mtrain = model.matrix(~.,mtrain)
+
+#Making data frame of the matrix
+mtrain = as.data.frame(mtrain)
+str(mtrain)
+
+#Same for test set
+mtest = model.matrix(~.,mtest)
+mtest = as.data.frame(mtest)
+str(mtest)
+
+#Removng the 1st column which is Intercept created due to dataframe
+mtrain = mtrain[,c(-1)]
+mtest = mtest[,c(-1)]
+
+#Making the linear Model
+Reg2 = lm(Sales ~ ., data = mtrain)
+
+Reg2 = lm(Sales ~ ., data = mtrain)
+PredTest = predict(Reg2, newdata = mtest)
+submission = data.frame(Id = test$Id, Sales = PredTest)
+write_csv(submission, "Reg2.csv",)
+
+
+
