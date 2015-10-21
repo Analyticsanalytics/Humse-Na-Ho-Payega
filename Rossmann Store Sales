@@ -1,5 +1,5 @@
 
-#######################LINEAR REGRESSION-----SCORE 56%  ################
+#######################LINEAR REGRESSION-----SCORE 62%  ################
 
 library(readr) #readr makes it easier to read and write heavy files
 train = read_csv(file = "C:\\Users\\admin\\Desktop\\Kaggle Competition\\Rossman\\train.csv")
