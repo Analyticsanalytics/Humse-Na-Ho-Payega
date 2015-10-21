@@ -66,7 +66,7 @@ submission = data.frame(Id = test$Id, Sales = PredTest)
 write_csv(submission, "Reg1.csv",)
 
 
-########LINEAR REGRESSION WITH IMPUTATION--------SCORE--73%  #######################
+########      LINEAR REGRESSION WITH IMPUTATION--------SCORE--73%  #######################
 
 library(readr)
 
@@ -121,3 +121,19 @@ write_csv(submission, "Reg2.csv",)
 
 
 
+################       RANDOM FOREST     SCORE--66%      #############################################
+#Removng the 1st column which is Intercept created due to dataframe
+mtrain = mtrain[,c(-1)]
+mtest = mtest[,c(-1)]
+str(mtrain)
+
+#Deleting some fo the variables which randomForest is unable to accommodate
+mtrain = mtrain[, -c(19:21)]
+mtest = mtest[, -c(19:21)]
+
+
+library(randomForest)
+RF2 = randomForest(Sales ~ ., data = mtrain, ntree=170, imp=TRUE, sampsize=10000, do.trace=TRUE)
+PredTest = predict(RF2, newdata = mtest)
+submission = data.frame(Id = test$Id, Sales = PredTest)
+write_csv(submission, "RF2.csv",)
