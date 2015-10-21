@@ -23,10 +23,6 @@ mtest[is.na(mtest)] = 0
 str(mtrain)
 str(mtest)
 
-# looking at only stores that were open in the train set may change this later
-mtrain <- mtrain[ which(mtrain$Open=='1'),]
-
-
 # seperating out the elements of the date column for the train set
 mtrain$month = as.integer(format(mtrain$Date, "%m"))
 mtrain$year = as.integer(format(mtrain$Date, "%y"))
@@ -78,7 +74,6 @@ library(readr)
 #Removing the CUstomer variables from train since it's not there in test set
 #Merging the training and testing set that with the store dataset and call em mtrain & mtest
 # Converting NA values to zero in training and testing set
-# Taking all the stores into consideration. Not only those stores which are open.
 # seperating out the elements of the date column for the train set
 # removing the date column (since elements are extracted) and also StateHoliday which has a lot of NAs (may add it back in later)
 # seperating out the elements of the date column for the test set
