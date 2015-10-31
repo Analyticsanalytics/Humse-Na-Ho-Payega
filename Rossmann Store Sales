@@ -28,7 +28,7 @@ mtrain$month = as.integer(format(mtrain$Date, "%m"))
 mtrain$year = as.integer(format(mtrain$Date, "%y"))
 mtrain$day = as.integer(format(mtrain$Date, "%d"))
 
-# removing the date column (since elements are extracted) and also StateHoliday which has a lot of NAs (may add it back in later)
+# removing the date column since elements are extracted
 mtrain$Date = NULL
 
 
@@ -41,7 +41,7 @@ str(mtest)
 
 
 #model.matrix creates a design matrix from the description given in terms(object).Any character variables are 
-#coerced to binary (0 or 1) by creating new variables. We're using it here to conver char var into binary vectors
+#coerced to binary (0 or 1) by creating new variables. We're using it here to convert charac variable into binary vectors
 library(Metrics)
 mtrain = model.matrix(~.,mtrain)
 
