@@ -141,7 +141,7 @@ write_csv(submission, "RF2.csv",)
 
 ################ RANDOM FOREST    SCORE-67%        #######################################
 
-Instead of deleting some variables which RF is unable to read, lets change them
+Instead of deleting some variables which RF is unable to read, lets change their names so that R could read em
 colnames(mtrain)[19:21] = c("LOL","ROL", "COL")
 colnames(mtest)[19:21] = c("LOL","ROL", "COL")
 
