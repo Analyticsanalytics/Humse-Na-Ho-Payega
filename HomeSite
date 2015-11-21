@@ -20,6 +20,8 @@ train$PropertyField29 = NULL
 test$PersonalField84 = NULL
 test$PropertyField29 = NULL
 
+##Checking the classes of all the variables in a dataset
+sapply(train, function (x) class(x))
 
 #Making comparison plots for numerical variables
 pairs(train[,6:9])
