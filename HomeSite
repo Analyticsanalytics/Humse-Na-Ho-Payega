@@ -1,0 +1,85 @@
+
+library(readr) #readr makes it easier to read and write heavy files
+train = read_csv(file = "C:\\Users\\admin\\Desktop\\Kaggle Competition\\Homesite\\train.csv")
+test = read_csv(file = "C:\\Users\\admin\\Desktop\\Kaggle Competition\\Homesite\\test.csv")
+
+#checking how many missing values are there
+length(train[is.na(train)])
+length(test[is.na(test)])
+
+#CHecking which all columns have NA values in train & test set
+M <- sapply(train, function(x) sum(is.na(x)))
+M[M>0]
+
+MT <- sapply(test, function(x) sum(is.na(x)))
+MT[MT>0]
+
+#Both datasets have same columns for missing values. Removing em since 0ver 70% of data of these columns is missing
+train$PersonalField84 = NULL
+train$PropertyField29 = NULL
+test$PersonalField84 = NULL
+test$PropertyField29 = NULL
+
+
+#Making comparison plots for numerical variables
+pairs(train[,6:9])
+
+#Making multiple histograms for numerical variables
+par(mfrow=c(2, 2))     #Here there will total 4 histograms, 2 in horizontal & 2 in vertical
+for (i in 6:9) {
+  hist(train[,i], main=colnames[i], probability=TRUE, col="gray", border="white")
+}
+
+#Making multiple boxplots for numerical variables
+par(mfrow=c(2, 2))
+for (i in 6:9) {
+  boxplot(train[,i], main=colnames[i], probability=TRUE, col="gray", border="black",  horizontal=TRUE)
+}
+
+
+# seperating out the elements of the date column for the train set
+train$month = as.integer(format(train$Original_Quote_Date, "%m"))
+train$year = as.integer(format(train$Original_Quote_Date, "%y"))
+train$day = as.integer(format(train$Original_Quote_Date, "%d"))
+
+# removing the Original_Quote_Date column since elements are extracted
+train$Original_Quote_Date = NULL
+
+
+#Same treatment for test set data
+test$month = as.integer(format(test$Original_Quote_Date, "%m"))
+test$year = as.integer(format(test$Original_Quote_Date, "%y"))
+test$day = as.integer(format(test$Original_Quote_Date, "%d"))
+test$Original_Quote_Date = NULL
+
+
+
+#model.matrix creates a design matrix from the description given in terms(object).Any character variables are 
+#coerced to binary (0 or 1) by creating new variables. We're using it here to convert charac variable into binary vectors
+library(Metrics)
+train = model.matrix(~.,train)
+
+#Making data frame of the matrix
+train = as.data.frame(train)
+
+
+#Same treatment for test set
+test = model.matrix(~.,test)
+test = as.data.frame(test)
+
+
+
+#Removng the 1st column which is Intercept created due to dataframe
+train = train[,c(-1)]
+test = test[,c(-1)]
+
+
+
+library(randomForest)
+RF1 = randomForest(QuoteConversion_Flag ~ ., data = train, ntree=170, imp=TRUE, sampsize=10000, do.trace=TRUE)
+PredTest = predict(RF1, newdata = test)
+
+
+
+submission = data.frame(QuoteNumber = test$QuoteNumber, QuoteConversion_FlagSales = PredTest)
+write_csv(submission, "RF1.csv",)
