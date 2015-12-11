@@ -27,7 +27,7 @@ news$SubsectionName = as.factor(news$SubsectionName)
 
 #Create a subset for the data to be imputed. Here more relevant columns hv been added so that imputation could compare
 itself with other variables in same row and do a proper imputation.
-imputeData = news[c("NewsDesk", "SectionName", "SubsectionName", "Abstract","Snippet","Headline")]
+imputeData = news[c("NewsDesk", "SectionName", "SubsectionName", "Abstract","Snippet","Headline"), ]
 library(mice)
 
 #RUn the imputation
