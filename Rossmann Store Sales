@@ -153,3 +153,161 @@ RossForesr = randomForest(Sales ~ ., data = mtrain, ntree=500, nodesize=50)
 PredTest = predict(RossForesr, newdata = mtest)
 submission = data.frame(Id = test$Id, Sales = PredTest)
 write_csv(submission, "RFF2.csv")
+
+
+######### COMBINING ALL THE DATASETS, RUN THE IMPUTATION, SEPARATE THEM AND THEN MAKE THE MODEL   #######################
+                SCORE-- 65.4%
+
+#	StringsAsFactors means if character vectors should be converted to factors
+#na.string means read NA and missing/complext values as well
+train = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\train.csv", stringsAsFactors = FALSE, na.strings="")
+test = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\test.csv", stringsAsFactors = FALSE, na.strings="")
+store = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\store.csv", stringsAsFactors = FALSE, na.strings="")
+str(store)
+
+str(train)
+str(test)
+
+#combining the train & test set, and then merging the store set
+names(train)
+names(test)
+train$Customers = NULL
+train$Id = rep(0,nrow(train)) #Creating dummy variable in train
+test$Sales = rep(0,nrow(test)) #creating a Sales dummy variable in test so that combining is possible
+data = rbind(train, test)
+
+dataset = merge(data, store)
+
+dataset$Date= as.Date.factor(dataset$Date,"%Y-%m-%d")
+dataset$month = as.integer(format(dataset$Date, "%m"))
+dataset$year = as.integer(format(dataset$Date, "%y"))
+dataset$day = as.integer(format(dataset$Date, "%d"))
+
+# removing the date column since elements are extracted
+dataset$Date = NULL
+
+
+library(Metrics)
+options(na.action="na.pass")  
+#	StringsAsFactors means if character vectors should be converted to factors
+#na.string means read NA and missing/complext values as well
+train = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\train.csv", stringsAsFactors = FALSE, na.strings="")
+test = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\test.csv", stringsAsFactors = FALSE, na.strings="")
+store = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\store.csv", stringsAsFactors = FALSE, na.strings="")
+str(store)
+
+str(train)
+str(test)
+
+#combining the train & test set, and then merging the store set
+names(train)
+names(test)
+train$Customers = NULL
+train$Id = rep(0,nrow(train)) #Creating dummy variable in train
+test$Sales = rep(0,nrow(test)) #creating a Sales dummy variable in test so that combining is possible
+data = rbind(train, test)
+
+dataset = merge(data, store)
+
+dataset$Date= as.Date.factor(dataset$Date,"%Y-%m-%d")
+dataset$month = as.integer(format(dataset$Date, "%m"))
+dataset$year = as.integer(format(dataset$Date, "%y"))
+dataset$day = as.integer(format(dataset$Date, "%d"))
+
+# removing the date column since elements are extracted
+dataset$Date = NULL
+
+
+library(Metrics)
+options(na.action="na.pass") #It will also include NA & blank values in the matrix, else they will be erased from matrix upon conversion
+dataset = model.matrix(~.,dataset)
+dataset = as.data.frame(dataset)
+
+#Removing the 1st column which is intercept
+dataset = dataset[,c(-1)]
+names(dataset)
+
+#Column 22 & 23 has confusing names. CHanging it.
+colnames(dataset)[22:23] = c("LOL","ROL")
+
+M <- sapply(dataset, function(x) sum(is.na(x)))
+M[M>0]    
+
+#Setting the NA values to zero on the assumption that they're missing values and not actual values, then we'll impute them
+dataset[is.na(dataset)] = 0
+
+dataset$CompetitionOpenSinceMonth[dataset$CompetitionOpenSinceMonth==0] = mean(dataset$CompetitionOpenSinceMonth, na.rm=TRUE)
+dataset$CompetitionOpenSinceYear[dataset$CompetitionOpenSinceYear==0] = mean(dataset$CompetitionOpenSinceYear, na.rm=TRUE)
+dataset$Promo2SinceWeek[dataset$Promo2SinceWeek==0] = mean(dataset$Promo2SinceWeek, na.rm=TRUE)
+dataset$Promo2SinceYear[dataset$Promo2SinceYear==0] = mean(dataset$Promo2SinceYear, na.rm=TRUE)
+dataset$CompetitionDistance[dataset$CompetitionDistancer==0] = mean(dataset$CompetitionDistance, na.rm=TRUE)
+dataset$LOL[dataset$LOL==0] = mean(dataset$LOL, na.rm=TRUE)
+dataset$ROL[dataset$ROL==0] = mean(dataset$ROL, na.rm=TRUE)
+dataset$Open[dataset$Open==0] = mean(dataset$Open, na.rm=TRUE)
+
+
+mtrain <- dataset[dataset$Id==0,]
+mtest <- dataset[dataset$Id > 0,]
+mtrain$Id = NULL
+mtest$Sales = NULL
+
+M1 <- sapply(mtrain, function(x) sum(is.na(x)))
+M1[M1>0]    
+
+
+#Making the linear Model
+RG1 = lm(Sales ~ ., data = mtrain)
+PredTest = predict(RG1, newdata = mtest)
+submission = data.frame(Id = test$Id, Sales = PredTest)
+write.csv(submission, "Reg1.csv",)
+library(readr)
+write_csv(submission, "Reg1.csv",)
+dataset = model.matrix(~.,dataset)
+dataset = as.data.frame(dataset)
+
+#Removing the 1st column which is intercept
+dataset = dataset[,c(-1)]
+names(dataset)
+
+#Column 22 & 23 has confusing names. CHanging it.
+colnames(dataset)[22:23] = c("LOL","ROL")
+
+M <- sapply(dataset, function(x) sum(is.na(x)))
+M[M>0]    
+
+dataset[is.na(dataset)] = 0
+
+
+
+
+dataset$CompetitionOpenSinceMonth[dataset$CompetitionOpenSinceMonth==0] = mean(dataset$CompetitionOpenSinceMonth, na.rm=TRUE)
+dataset$CompetitionOpenSinceYear[dataset$CompetitionOpenSinceYear==0] = mean(dataset$CompetitionOpenSinceYear, na.rm=TRUE)
+dataset$Promo2SinceWeek[dataset$Promo2SinceWeek==0] = mean(dataset$Promo2SinceWeek, na.rm=TRUE)
+dataset$Promo2SinceYear[dataset$Promo2SinceYear==0] = mean(dataset$Promo2SinceYear, na.rm=TRUE)
+dataset$CompetitionDistance[dataset$CompetitionDistancer==0] = mean(dataset$CompetitionDistance, na.rm=TRUE)
+dataset$LOL[dataset$LOL==0] = mean(dataset$LOL, na.rm=TRUE)
+dataset$ROL[dataset$ROL==0] = mean(dataset$ROL, na.rm=TRUE)
+dataset$Open[dataset$Open==0] = mean(dataset$Open, na.rm=TRUE)
+
+
+
+
+
+
+
+mtrain <- dataset[dataset$Id==0,]
+mtest <- dataset[dataset$Id > 0,]
+mtrain$Id = NULL
+mtest$Sales = NULL
+
+M1 <- sapply(mtrain, function(x) sum(is.na(x)))
+M1[M1>0]    
+
+
+#Making the linear Model
+RG1 = lm(Sales ~ ., data = mtrain)
+PredTest = predict(RG1, newdata = mtest)
+submission = data.frame(Id = test$Id, Sales = PredTest)
+write.csv(submission, "Reg1.csv",)
+library(readr)
+write_csv(submission, "Reg1.csv",)
