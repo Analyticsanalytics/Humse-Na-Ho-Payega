@@ -31,6 +31,8 @@ str(train)
 
 #model.matrix creates a design matrix from the description given in terms(object).Any character
 #variables are coerced to binary (0 or 1) by creating new variables. We're using it here to conver char var into binary vectors
+library(Metrics)
+options(na.action="na.pass") #It will also include NA & blank values in the matrix, else they will be erased from matrix upon conversion
 mtrain = model.matrix(~.,train)
 
 #Making data frame of the matrix
