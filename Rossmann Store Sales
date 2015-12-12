@@ -20,24 +20,20 @@ length(mtest[is.na(mtest)])
 # There are some missing  values (NA)in integar columns. Converting these values to zero. 
 mtrain[is.na(mtrain)] = 0
 mtest[is.na(mtest)] = 0
-str(mtrain)
-str(mtest)
+
 
 # seperating out the elements of the date column for the train set
 mtrain$month = as.integer(format(mtrain$Date, "%m"))
 mtrain$year = as.integer(format(mtrain$Date, "%y"))
 mtrain$day = as.integer(format(mtrain$Date, "%d"))
 
-# removing the date column since elements are extracted
-mtrain$Date = NULL
-
+mtrain$Date = NULL     # removing the date column since elements are extracted
 
 #Same treatment for test set data
 mtest$month = as.integer(format(mtest$Date, "%m"))
 mtest$year = as.integer(format(mtest$Date, "%y"))
 mtest$day = as.integer(format(mtest$Date, "%d"))
 mtest$Date = NULL
-str(mtest)
 
 
 #model.matrix creates a design matrix from the description given in terms(object).Any character variables are 
@@ -48,12 +44,10 @@ mtrain = model.matrix(~.,mtrain)
 
 #Making data frame of the matrix
 mtrain = as.data.frame(mtrain)
-str(mtrain)
 
 #Same treatment for test set
 mtest = model.matrix(~.,mtest)
 mtest = as.data.frame(mtest)
-str(mtest)
 
 
 #Removng the 1st column which is Intercept created due to dataframe
@@ -94,24 +88,11 @@ mtest$Promo2SinceWeek[mtest$Promo2SinceWeek==0] = mean(mtest$Promo2SinceWeek, na
 mtest$Promo2SinceYear[mtest$Promo2SinceYear==0] = mean(mtest$Promo2SinceYear, na.rm=TRUE)
 
 
-#model.matrix creates a design matrix from the description given in terms(object).Any character variables are 
-#coerced to binary (0 or 1) by creating new variables. We're using it here to conver char var into binary vectors
 library(Metrics)
-options(na.action="na.pass") #It will also include NA & blank values in the matrix, else they will be erased from matrix upon conversion
-mtrain = model.matrix(~.,mtrain)
-
-#Making data frame of the matrix
-mtrain = as.data.frame(mtrain)
-str(mtrain)
-
-#Same for test set
-mtest = model.matrix(~.,mtest)
-mtest = as.data.frame(mtest)
-str(mtest)
-
+options(na.action="na.pass")
+#Making the model.matrix and then dataframe of train set and then test set
 #Removng the 1st column which is Intercept created due to dataframe
-mtrain = mtrain[,c(-1)]
-mtest = mtest[,c(-1)]
+
 
 #Making the linear Model
 Reg2 = lm(Sales ~ ., data = mtrain)
@@ -125,9 +106,6 @@ write_csv(submission, "Reg2.csv",)
 
 ################       RANDOM FOREST     SCORE--66%      #############################################
 #Removng the 1st column which is Intercept created due to dataframe
-mtrain = mtrain[,c(-1)]
-mtest = mtest[,c(-1)]
-str(mtrain)
 
 #Deleting some fo the variables which randomForest is unable to accommodate
 mtrain = mtrain[, -c(19:21)]
@@ -158,46 +136,10 @@ write_csv(submission, "RFF2.csv")
 ######### COMBINING ALL THE DATASETS, RUN THE IMPUTATION, SEPARATE THEM AND THEN MAKE THE MODEL   #######################
                 SCORE-- 65.4%
 
-#	StringsAsFactors means if character vectors should be converted to factors
-#na.string means read NA and missing/complext values as well
+
 train = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\train.csv", stringsAsFactors = FALSE, na.strings="")
 test = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\test.csv", stringsAsFactors = FALSE, na.strings="")
 store = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\store.csv", stringsAsFactors = FALSE, na.strings="")
-str(store)
-
-str(train)
-str(test)
-
-#combining the train & test set, and then merging the store set
-names(train)
-names(test)
-train$Customers = NULL
-train$Id = rep(0,nrow(train)) #Creating dummy variable in train
-test$Sales = rep(0,nrow(test)) #creating a Sales dummy variable in test so that combining is possible
-data = rbind(train, test)
-
-dataset = merge(data, store)
-
-dataset$Date= as.Date.factor(dataset$Date,"%Y-%m-%d")
-dataset$month = as.integer(format(dataset$Date, "%m"))
-dataset$year = as.integer(format(dataset$Date, "%y"))
-dataset$day = as.integer(format(dataset$Date, "%d"))
-
-# removing the date column since elements are extracted
-dataset$Date = NULL
-
-
-library(Metrics)
-options(na.action="na.pass")  
-#	StringsAsFactors means if character vectors should be converted to factors
-#na.string means read NA and missing/complext values as well
-train = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\train.csv", stringsAsFactors = FALSE, na.strings="")
-test = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\test.csv", stringsAsFactors = FALSE, na.strings="")
-store = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Rossman\\store.csv", stringsAsFactors = FALSE, na.strings="")
-str(store)
-
-str(train)
-str(test)
 
 #combining the train & test set, and then merging the store set
 names(train)
@@ -230,8 +172,8 @@ names(dataset)
 #Column 22 & 23 has confusing names. CHanging it.
 colnames(dataset)[22:23] = c("LOL","ROL")
 
-M <- sapply(dataset, function(x) sum(is.na(x)))
-M[M>0]    
+M <- sapply(dataset, function(x) sum(is.na(x))) #Making a list M of variables with missing values
+M[M>0]    #Getting the variables which have NA values greater than zero
 
 #Setting the NA values to zero on the assumption that they're missing values and not actual values, then we'll impute them
 dataset[is.na(dataset)] = 0
@@ -246,55 +188,7 @@ dataset$ROL[dataset$ROL==0] = mean(dataset$ROL, na.rm=TRUE)
 dataset$Open[dataset$Open==0] = mean(dataset$Open, na.rm=TRUE)
 
 
-mtrain <- dataset[dataset$Id==0,]
-mtest <- dataset[dataset$Id > 0,]
-mtrain$Id = NULL
-mtest$Sales = NULL
-
-M1 <- sapply(mtrain, function(x) sum(is.na(x)))
-M1[M1>0]    
-
-
-#Making the linear Model
-RG1 = lm(Sales ~ ., data = mtrain)
-PredTest = predict(RG1, newdata = mtest)
-submission = data.frame(Id = test$Id, Sales = PredTest)
-write.csv(submission, "Reg1.csv",)
-library(readr)
-write_csv(submission, "Reg1.csv",)
-dataset = model.matrix(~.,dataset)
-dataset = as.data.frame(dataset)
-
-#Removing the 1st column which is intercept
-dataset = dataset[,c(-1)]
-names(dataset)
-
-#Column 22 & 23 has confusing names. CHanging it.
-colnames(dataset)[22:23] = c("LOL","ROL")
-
-M <- sapply(dataset, function(x) sum(is.na(x)))
-M[M>0]    
-
-dataset[is.na(dataset)] = 0
-
-
-
-
-dataset$CompetitionOpenSinceMonth[dataset$CompetitionOpenSinceMonth==0] = mean(dataset$CompetitionOpenSinceMonth, na.rm=TRUE)
-dataset$CompetitionOpenSinceYear[dataset$CompetitionOpenSinceYear==0] = mean(dataset$CompetitionOpenSinceYear, na.rm=TRUE)
-dataset$Promo2SinceWeek[dataset$Promo2SinceWeek==0] = mean(dataset$Promo2SinceWeek, na.rm=TRUE)
-dataset$Promo2SinceYear[dataset$Promo2SinceYear==0] = mean(dataset$Promo2SinceYear, na.rm=TRUE)
-dataset$CompetitionDistance[dataset$CompetitionDistancer==0] = mean(dataset$CompetitionDistance, na.rm=TRUE)
-dataset$LOL[dataset$LOL==0] = mean(dataset$LOL, na.rm=TRUE)
-dataset$ROL[dataset$ROL==0] = mean(dataset$ROL, na.rm=TRUE)
-dataset$Open[dataset$Open==0] = mean(dataset$Open, na.rm=TRUE)
-
-
-
-
-
-
-
+#Separating the data into training and test set
 mtrain <- dataset[dataset$Id==0,]
 mtest <- dataset[dataset$Id > 0,]
 mtrain$Id = NULL
