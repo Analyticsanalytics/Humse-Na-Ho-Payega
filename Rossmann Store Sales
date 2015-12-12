@@ -191,8 +191,8 @@ dataset$Open[dataset$Open==0] = mean(dataset$Open, na.rm=TRUE)
 #Separating the data into training and test set
 mtrain <- dataset[dataset$Id==0,]
 mtest <- dataset[dataset$Id > 0,]
-mtrain$Id = NULL
-mtest$Sales = NULL
+mtrain$Id = NULL    #Deleting the dummy variable Id
+mtest$Sales = NULL   # Deleting the dummy variable sales
 
 M1 <- sapply(mtrain, function(x) sum(is.na(x)))
 M1[M1>0]    
