@@ -90,12 +90,12 @@ mtest$Promo2SinceYear[mtest$Promo2SinceYear==0] = mean(mtest$Promo2SinceYear, na
 
 library(Metrics)
 options(na.action="na.pass")
-#Making the model.matrix and then dataframe of train set and then test set
-#Removng the 1st column which is Intercept created due to dataframe
+mtrain = model.matrix(~.,mtrain)
+mtrain = as.data.frame(mtrain)
 
+mtest = model.matrix(~.,mtest)
+mtrain = as.data.frame(mtest)
 
-#Making the linear Model
-Reg2 = lm(Sales ~ ., data = mtrain)
 
 Reg2 = lm(Sales ~ ., data = mtrain)
 PredTest = predict(Reg2, newdata = mtest)
