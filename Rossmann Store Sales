@@ -31,7 +31,7 @@ mtrain$day = as.integer(format(mtrain$Date, "%d"))
 mtrain$Date = NULL     # removing the date column since elements are extracted
 
 #Same treatment for test set data
-mtrain$Date= as.Date.factor(mtrain$Date,"%Y-%m-%d")
+mtest$Date= as.Date.factor(mtest$Date,"%Y-%m-%d")
 mtest$month = as.integer(format(mtest$Date, "%m"))
 mtest$year = as.integer(format(mtest$Date, "%y"))
 mtest$day = as.integer(format(mtest$Date, "%d"))
