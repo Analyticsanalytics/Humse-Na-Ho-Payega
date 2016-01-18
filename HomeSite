@@ -47,4 +47,44 @@ write_csv(submission, "submit_boost.csv")
 
 
 
-###################################################
+#############################   h2o   GLM Score 74%    ######################
+
+
+library(h2o)
+h2o.init()
+
+train = file.path(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Homesite\\train.csv")
+test = file.path(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Homesite\\test.csv")
+
+
+
+train_hex = h2o.importFile(path = train, destination_frame = "train_hex")
+test_hex = h2o.importFile(path = test, destination_frame = "test_hex")
+
+summary(train_hex)
+
+Y = "QuoteConversion_Flag"
+X = c("Field6","Field7","Field8","Field9","Field10","Field11","Field12","CoverageField1A","CoverageField1B",     
+      "CoverageField2A","CoverageField2B","CoverageField3A","CoverageField3B",     
+      "CoverageField4A","CoverageField4B","CoverageField5A","CoverageField5B",     
+      "CoverageField6A","CoverageField6B","CoverageField8","CoverageField9",      
+      "CoverageField11A","CoverageField11B","SalesField1A","SalesField1B",        
+      "SalesField2A","SalesField2B","SalesField3","SalesField4",         
+      "SalesField5", "SalesField6","SalesField7","SalesField8",         
+      "SalesField9","SalesField10","SalesField11","SalesField12",        
+      "SalesField13","SalesField14","SalesField15","PersonalField1")
+
+
+train.glm <- h2o.glm(training_frame=train_hex, x=X, y=Y, family = "binomial")
+summary(train.glm)
+
+
+pred = as.data.frame(h2o.predict(object = train.glm, newdata = test_hex))
+names(pred)
+table(pred$predict)
+
+test1 = read.csv(file = "F:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Homesite\\test.csv")
+submission = data.frame(QuoteNumber= test1$QuoteNumber, QuoteConversion_Flag=pred$predict)
+options(scipen = 3)
+library(readr)
+write_csv(submission, "h2oGLM3.csv")
