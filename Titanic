@@ -1,0 +1,71 @@
+
+train = read.csv(file = "E:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Titanic\\train.csv")
+test = read.csv(file = "E:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Titanic\\test.csv")
+gender = read.csv(file = "E:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Titanic\\gendermodel.csv")
+gclass = read.csv(file = "E:\\Desktop1\\Padhai Likhai\\Kaggle Competition\\Titanic\\genderclassmodel.csv")
+
+table(train$Survived)
+attributes(train)
+
+#Proportion of people who survived(1). 62% people did not survived (0) 
+prop.table(table(train$Survived))
+
+#Since Zero (not survived) is most commont, we create a response Survived and repeat this for 418 rows in test set
+test$Survived = rep(0, 418)
+
+submit <- data.frame(PassengerId = test$PassengerId, Survived = test$Survived)
+write.csv(submit, file = "theyallperish.csv", row.names = FALSE)
+
+
+
+################## Submission      #######################
+
+table(train$Sex, train$Survived)
+
+#This gives the ratio of male & female who survived
+prop.table(table(train$Sex, train$Survived),1)
+#As we can see, 81% of men did not survive while 74% of women survived
+
+#Making all the people dead, then making the females as survivors
+test$Survived = 0
+test$Survived[test$Sex == "female"] = 1
+
+#Creating a new new variable child to show whether the person is below 18 years of age
+train$Child = 0
+train$Child[train$Age < 18] = 1
+
+#Submission
+
+
+#########################
+
+
+
+
+library(rpart)
+fit <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, data=train, method="class")
+plot(fit)
+text(fit)
+
+
+#MAking a fancy tree using fancyRPartPlot
+library(rattle)
+library(rpart.plot)
+library(RColorBrewer)
+fancyRpartPlot(fit)
+
+Prediction <- predict(fit, test, type = "class")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "myfirstdtree.csv", row.names = FALSE)
+
+
+#Making another tree using diff complexity parameters
+fit1 <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, data=train,
+             method="class", control=rpart.control(minsplit=2, cp=0))
+
+fancyRpartPlot(fit1)
+
+
+
+#####################################################################################################
+
