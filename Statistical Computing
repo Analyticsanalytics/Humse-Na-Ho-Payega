@@ -1,0 +1,97 @@
+
+
+##########      STATISTICAL COMPUTING      #################
+
+
+print("The zero occurs at", 2*pi, "radians.")  #this will give an error, since data type is not same
+
+cat("The zero occurs at", 2*pi, "radians.", "\n") #This wont give errr. Cat is used for customized priting
+
+
+# Notice that cat puts a space between each item by default. You must provide a newline character (\n) to terminate the line.
+#serious limitation, however, is that cat cannot print compound data structures such as matrices and lists.
+
+
+ls.str() #To know what func are defined in the workspace with details of each function
+#ls does not return any name that begins with a dot (.). We can use ls(all.names=TRUE) to get all names
+
+
+#You can remove several variables at once:
+rm(x,y,z)
+
+
+
+#Select all elements greater than the median. Here V is a vector with elements
+v[ v > median(v) ]
+
+#Select all elements in the lower and upper 5%
+v[ (v < quantile(v,0.05)) | (v > quantile(v,0.95)) ]
+
+#Select all elements that exceed ±2 standard deviations from the mean
+v[ abs(v-mean(v)) > 2*sd(v) ]
+
+#Select all elements that are neither NA nor NULL
+v[ !is.na(v) & !is.null(v) ]
+
+
+# We can create an empty data frame and then invoke the built-in,spreadsheet-like editor to populate it:
+scores <- data.frame() # Create empty data frame
+scores <- edit(score) # Invoke editor, overwrite with edited data
+
+#The list.files function shows the contents of your working directory:
+list.files()
+
+#To see all the files in your subdirectories, too, use 
+list.files(recursive=T)
+
+
+#This example inserts 99 into the middle of a sequence: append func is used for this
+append(1:10, 99, after=5)
+  #[1] 1 2 3 4 5 99 6 7 8 9 10
+
+
+### Different way of getting columns from a data frame. Here lst is a data frame
+
+lst[["name"]]
+#Selects the element called name. Returns NULL if no element has that name.
+
+lst$name
+#Same as previous, just different syntax.
+
+lst[c(name1, name2, ..., namek)]
+#Returns a list built from the indicated elements of lst.
+
+
+
+## unlist() function
+l.ex <- list(a = list(1:5, LETTERS[1:5]), b = "Z", c = NA)
+fix(l.ex)
+unlist(l.ex) #or 
+mean(unlist(l.ex)) #It will unlist all the lists and give their mean value
+
+
+## Data frame
+df[1] #This will return all elements of 1st column in the form of a dataframe 
+df[[1]] #It will return all the observations of 1st column, but not in the form of a dataframe
+df[4,5] #It will return single observation of 5th column corresponding to 4th row
+with(df, Lol) #Aleternatively, we can use with func. It will show allt the observa of Lol column
+
+df[,c(1,4)] #It will return a data frame of observations with 1st & 4th columns
+df[,c("Col","Lol","Rol")] #It will return a data frame with 3 columns col, lol & ROl
+df[,2, drop=FALSE] #Had we not used drop=FALSE here, we would not know df[,2] will return a dataframe 
+          #Drop=FALSE, forces R to return a data frame
+
+## We can also use subset function for the same. df is dataframe
+subset(df, select=colname)
+subset(df, select=c(colname1, ..., colnameN))
+subset(df, select=c(predictor,response), subset=(response > 0))
+subset(dfrm, select = -badboy) #THis will include all the column but badboy
+
+colnames(df) = c("Lol","Col","Rol") #Changing the names of columns in a dataframe
+
+#Changing the values in data frame using a editor window
+df1 <- edit(df)  #OR
+fix(df)
+
+m = merge(df1, df2, by="name") #Merging two dataframe having a common column
+
