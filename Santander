@@ -1,0 +1,29 @@
+
+
+train = read.csv(file = "E:\\Personal\\Study\\Kaggle Competition\\santander\\train.csv")
+test = read.csv(file = "E:\\Personal\\Study\\Kaggle Competition\\santander\\test.csv")
+str(train)
+names(train)
+summary(train$TARGET)
+names(test)
+
+
+length(train[is.na(train)])
+length(test[is.na(test)])
+
+train$ID = NULL
+mtrain = model.matrix(~., train)
+mtrain = as.data.frame(mtrain)[-1]
+
+ID = test$ID
+test$ID = NULL
+mtest = model.matrix(~., test)
+mtest = as.data.frame(mtest)[-1]
+
+Model = glm(TARGET ~., data = mtrain, family = binomial)
+
+Prediction = predict(Model, type="response", newdata=mtest)
+
+submission = data.frame(ID, TARGET = Prediction)
+submission$TARGET = ifelse(submission$TARGET < 0.5, 0,1)
+write.csv(submission, "LogReg1.csv",row.names = FALSE)
