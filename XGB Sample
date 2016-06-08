@@ -1,0 +1,65 @@
+
+
+library(data.table)
+library(xgboost)
+library(methods)
+library(magrittr)
+
+train = fread("C:\\Users\\sohail.ahmad\\Documents\\otto group\\train.csv", header = T, stringsAsFactors = F)
+test = fread("C:\\Users\\sohail.ahmad\\Documents\\otto group\\test.csv", header = T, stringsAsFactors = F)
+
+dim(train)
+train[1:6,1:5, with =F]
+dim(test)
+test[1:6,1:5, with =F] #Displaying the 1st 6 rows and 1st 6 columns for convenience
+
+#CHecking the content of last column
+train[1:6, ncol(train), with  = F]
+
+# Delete ID column in training & test dataset
+train[, id := NULL]
+test[, id := NULL]
+
+# Save the name of the last column
+nameLastCol = names(train)[ncol(train)]
+
+# Convert from classes to numbers
+y = train[, nameLastCol, with = F][[1]] %>% gsub('Class_','',.) %>% {as.integer(.) -1}
+# Display the first 5 levels
+y[1:5]
+
+names(train)
+train[, nameLastCol:=NULL, with = F]
+
+
+# data.table is not a format supported natively by XGBoost. We need to convert both datasets (training and test) in numeric Matrix format.
+trainMatrix = train[,lapply(.SD,as.numeric)] %>% as.matrix
+testMatrix = test[,lapply(.SD,as.numeric)] %>% as.matrix
+
+
+########################################
+#######  Model Training   ##############
+########################################
+
+#Before the learning we will use the cross validation to evaluate the our error rate.
+
+#Basically XGBoost will divide the training data in nfold parts, then XGBoost will retain the first part and use it as the test data. 
+#Then it will reintegrate the first part to the training dataset and retain the second part, do a training and so on
+numberOfClasses = max(y) + 1
+param = list("objective"="multi:softprob", "eval_metric"="mlogloss", "num_class"=numberOfClasses)
+cv.nround = 5
+cv.nfold = 3
+
+bst.cv = xgb.cv(param=param, data = trainMatrix, label = y, nfold = cv.nfold, nrounds = cv.nround)
+#As we can see the error rate is low on the test dataset (for a 5mn trained model).
+
+#FInally we're ready to train the real model. Here we're building model with 50 trees
+nround = 50
+bst = xgboost(param=param, data = trainMatrix, label = y, nrounds=nround)
+
+
+https://www.kaggle.com/tqchen/otto-group-product-classification-challenge/understanding-xgboost-model-on-otto-data/comments
+https://github.com/dmlc/xgboost/blob/master/R-package/vignettes/xgboostPresentation.Rmd
+https://github.com/dmlc/xgboost/blob/master/R-package/vignettes/discoverYourData.Rmd
+http://fr.slideshare.net/MichaelBENESTY/feature-importance-analysis-with-xgboost-in-tax-audit
+
