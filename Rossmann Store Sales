@@ -42,13 +42,13 @@ mtest$Date = NULL
 #coerced to binary (0 or 1) by creating new variables. We're using it here to convert charac variable into binary vectors
 library(Metrics)
 options(na.action="na.pass") #It will also include NA & blank values in the matrix, else they will be erased from matrix upon conversion
-mtrain = model.matrix(~.,mtrain)
+mtrain = model.matrix(~.,mtrain)[-1]
 
 #Making data frame of the matrix
 mtrain = as.data.frame(mtrain)
 
 #Same treatment for test set
-mtest = model.matrix(~.,mtest)
+mtest = model.matrix(~.,mtest)[-1]
 mtest = as.data.frame(mtest)
 
 
@@ -92,10 +92,10 @@ mtest$Promo2SinceYear[mtest$Promo2SinceYear==0] = mean(mtest$Promo2SinceYear, na
 
 library(Metrics)
 options(na.action="na.pass")
-mtrain = model.matrix(~.,mtrain)
+mtrain = model.matrix(~.,mtrain)[-1]
 mtrain = as.data.frame(mtrain)
 
-mtest = model.matrix(~.,mtest)
+mtest = model.matrix(~.,mtest)[-1]
 mtrain = as.data.frame(mtest)
 
 
