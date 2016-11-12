@@ -1,0 +1,113 @@
+
+rm(list = ls())
+df = read.csv("Recom.csv")
+
+df$BMI = df$Weight/((df$Height/100)^2)
+
+dfm = subset(df, df$Gender == "M")
+
+set.seed(20)
+clust = kmeans(dfm$BMI, centers = 3, iter.max = 1000)
+str(clust)
+
+
+clust1 = subset(dfm, clust$cluster == 1)
+clust2 = subset(dfm, clust$cluster == 2)
+clust3 = subset(dfm, clust$cluster == 3)
+
+table(clust$size)
+
+clust$centers
+
+sd(clust1$BMI)
+sd(clust2$BMI)
+sd(clust3$BMI)
+
+###plot
+set.seed(20)
+library(fpc)
+library(cluster)
+dfm1 = dfm[,-3]
+str(dfm1)
+names(dfm1)
+dfm1$City = NULL
+dfm1$Marital_Status = NULL
+dfm1$Handset._Type = NULL
+par(mar=c(1,1,1,1))
+plotcluster(dfm1, clust$cluster, xlab = "dc1", ylab = "dc2")
+
+
+clusplot(dfm1, clust$cluster, color=TRUE, shade=TRUE, labels=2, lines=0)
+
+
+
+
+#Basically we need to deduct and add from mean with twice of SD to get lower & upper threshold
+
+# The range for clust1 would be 24.2 and 34.2
+#The range for clust2 would be 14.9 and 26.4
+#The range for clust3 would be 31.7 and 45
+
+# now BMI less than 24.2 would be weak, b/w 24.2 & 31.7 would be balance, over 31.7 would be obese
+
+dfm$BMI_Comments = ifelse(dfm$BMI > 24.2, ifelse(dfm$BMI > 31.7, "Obese","balance" ),  "Weak")
+prop.table(table(dfm$BMI_Comments))
+table(dfm$BMI_Comments)
+names(dfm)
+
+
+
+dfm[,2:12] = NULL
+names(dfm)
+df2 = merge(x=df, y=dfm, by = "PERSON" , all.x = TRUE)
+names(df2)
+
+
+
+###############   Same procedure for femles  ###############################################
+
+dfw = subset(df, df$Gender == "F")
+
+set.seed(20)
+clw = kmeans(dfw$BMI, centers = 3, iter.max = 1000)
+str(clw)
+
+
+clust11 = subset(dfw, clw$cluster == 1)
+clust12 = subset(dfw, clw$cluster == 2)
+clust13 = subset(dfw, clw$cluster == 3)
+
+table(clw$size)
+
+clust$centers
+
+sd(clust11$BMI)  #Balance BMI Cases
+sd(clust12$BMI)   # Weak BMI Cases
+sd(clust13$BMI)   # Obese BMI Cases
+
+#Basically we need to deduct and add from mean with twice of SD to get lower & upper threshold
+
+# The range for clust11 would be 23.8 and 34.6
+#The range for clust12 would be 15.5 and 26
+#The range for clust13 would be 31.4 and 43
+
+# now BMI less than 23.8 would be weak, b/w 23.8 & 31.4 would be balance, over 31.4 would be obese
+
+dfw$BMI_Comments = ifelse(dfw$BMI > 23.8, ifelse(dfw$BMI > 31.4, "Obese","balance" ),  "Weak")
+names(dfw)
+
+dfw[,2:12] = NULL
+names(dfw)
+
+dfFInal = merge()
+
+#df3 = merge(x=df, y=dfw, by = "PERSON" , all.x = TRUE)
+#fix(df2)
+#names(df2)
+
+# Try to map the values of dfw$BMI_Comments into DF2 and get overall BMI_COmments.
+
+#NOw compare the mean weights of male and female. Female mean should be lesser as BMI criteria for em s lower
+
+tapply(df$Age, df$Gender, mean)
+tapply(df$Height, df$Gender, mean)
