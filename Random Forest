@@ -1,0 +1,79 @@
+
+
+
+
+
+rm(list = ls())
+
+setwd("C:\\Users\\sohail.ahmad\\Desktop\\Sit Visits Data")
+df = read.csv(file = "SiteVisit_21st Nov.csv", stringsAsFactors = FALSE, na.strings = c("", " ", NA))
+summary(df)
+names(df)
+table(df$LocationTerminals)
+
+#df1 = df[, -c(1,2,4,5,10:15,17,18,21,22,24,32,37:42)]
+df1 = df[, c(3,6:9,14,23,26,28:39)]
+names(df1)
+
+
+#CHecking the missing values from columns and logically imputing them
+colSums(is.na(df1))
+
+
+#Converting the False values to zero in forsale
+df1$ForSale = ifelse(df1$ForSale=="1",1,0)
+df1$Operating = ifelse(df1$Operating=="1",1,0)
+df1$SignagePresent = ifelse(df1$SignagePresent=="1",1,0)
+
+
+sapply(df1, function(x) class(x))
+
+#Same for numeric. it will create NA values in PPvD; we impute witht the mean
+df1$BA.Score = as.integer(df1$BA.Score)
+df1$PPvD = as.numeric(df1$PPvD)
+df1$PPvD[is.na(df1$PPvD)] = mean(df1$PPvD, na.rm=TRUE)
+
+
+
+df1$LocationEmployees = as.integer(df1$LocationEmployees)
+df1$LocationAge.Months. = as.integer(df1$LocationAge.Months.)
+df1$LocationEmployees[is.na(df1$LocationEmployees)] = median(df1$LocationEmployees, na.rm=TRUE)
+
+
+names(df1)
+fac = c(3,4,6,7,9:14, 16:20)
+df1[,fac] = lapply(df1[,fac], as.factor)
+
+
+#THere are no missing values in the dataset
+colSums(is.na(df1))
+
+set.seed(20)
+library(caTools)
+spl = sample.split(df1$Delinquent, SplitRatio = 0.66)
+train = subset(df1, spl==TRUE)
+test = subset(df1, spl==FALSE)
+
+train = train[, -c(1,4,5)]
+test = test[, -c(1,4,5)]
+
+table(train$Delinquent)
+
+library(randomForest)
+rf = randomForest(Delinquent ~., data = train, ntree=80, imp=TRUE, mtry=4, do.trace=TRUE)
+summary(rf)
+
+varImpPlot(rf)
+
+Pred = predict(rf, newdata = test, type = "prob")
+Pred.prob = Pred[,2]
+table(test$Delinquent, Pred.prob >= 0.5)
+
+library(ROCR)
+ROCRPred = prediction(Pred.prob, test$Delinquent)
+ROCRPerf = performance(ROCRPred, "tpr", "fpr")
+plot(ROCRPerf)
+
+plot(ROCRPerf, colorize=T, print.cutoffs.at=seq(0,1,0.05), text.adj=c(-0.2,1.7))
+auc = as.numeric(performance(ROCRPred, "auc")@y.values)
+table(test$Delinquent)
