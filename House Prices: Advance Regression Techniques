@@ -1,0 +1,80 @@
+
+
+rm(list = ls())
+getwd()
+setwd("/home/lebowski/Desktop/Kaggle/House Prices: AR")
+
+
+train = read.csv("train.csv")
+test = read.csv("test.csv")
+
+
+sapply(train, function(x) class(x))
+names(train)[1:3]
+
+# Combine the train and test set to understand the data
+table(train$SalePrice >0) #All the sale prices are greater than zero. 
+test$SalePrice = 0  # We can get test set later on using saleprice zero condition
+df = rbind(train,test)
+
+str(df)
+
+#CHecking the missing values. There are so many missing values
+colSums(is.na(df))
+df$PoolQC = NULL
+df$MiscFeature = NULL
+df$Alley = NULL
+df$Fence = NULL
+df$FireplaceQu = NULL
+
+MM = (colSums(is.na(df)))
+MM1 = MM[MM>5]
+names(MM1)
+
+library(mice)
+imputeData = df[, c("LotFrontage", "MasVnrType", "MasVnrArea", "BsmtQual", "BsmtCond", "BsmtExposure", "BsmtFinType1",
+                    "BsmtFinType2", "GarageType", "GarageYrBlt",  "GarageFinish", "GarageQual", "GarageCond")]
+imputed = complete(mice(imputeData))
+
+df[, c("LotFrontage", "MasVnrType", "MasVnrArea", "BsmtQual", "BsmtCond", "BsmtExposure", "BsmtFinType1",
+             "BsmtFinType2", "GarageType", "GarageYrBlt",  "GarageFinish", "GarageQual", "GarageCond")] = NULL
+df1 =cbind(df,imputed)
+sort(colSums(is.na(df1)))
+
+NN = colSums(is.na(df1))
+NN1 = NN[NN>0]
+names(NN1)
+
+ImputedData1 = df1[, c("MSZoning","Utilities","Exterior1st","Exterior2nd","BsmtFinSF1","BsmtFinSF2","BsmtUnfSF","TotalBsmtSF", 
+         "Electrical","BsmtFullBath","BsmtHalfBath","KitchenQual","Functional","GarageCars","GarageArea","SaleType")]
+
+imputed1 = complete(mice(ImputedData1))
+
+df1[, c("MSZoning","Utilities","Exterior1st","Exterior2nd","BsmtFinSF1","BsmtFinSF2","BsmtUnfSF","TotalBsmtSF", 
+        "Electrical","BsmtFullBath","BsmtHalfBath","KitchenQual","Functional","GarageCars","GarageArea","SaleType")] = NULL
+df2 = cbind(df1, imputed1)
+
+train = NULL
+test = NULL
+df1 = NULL
+df = NULL
+imputed = NULL
+imputeData = NULL
+ImputedData1 = NULL
+train = df2[1:1460, ]
+test = df2[1461:2919,]
+
+Id = test$Id
+test$Id = NULL
+test$SalePrice = NULL
+class(train$SalePrice)
+
+#start random forest
+library(randomForest)
+rffit = randomForest(SalePrice ~ .,train,ntree=120, imp=TRUE, sampsize=1000, do.trace=TRUE)
+
+
+submission = data.frame(Id)
+submission$SalePrice = predict(rffit, test)
+write.csv(submission, "submit_rf1.csv", row.names=FALSE)
+          
