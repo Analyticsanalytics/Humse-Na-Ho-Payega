@@ -1,0 +1,44 @@
+
+
+
+
+#########################    BORUTA: FEATURE IMPORTANCE EXTRACTION    #######################################
+
+library(mlbench)
+data("Ozone")
+Ozone = na.omit(Ozone)
+library(Boruta)
+
+#Setting doTrace argument to 1 or 2 makes Boruta report the progress of the process; version
+# 2 is a little more verbose, namely it shows attribute decisions as soon as they are cleared.
+set.seed(1)
+Boruta.Ozone = Boruta(V4 ~ ., data = Ozone, doTrace = 2, ntree = 500)
+
+# It confirms 9 attritbutes as importantand 3 as unimportant after 52 iterations
+Boruta.Ozone
+plot(Boruta.Ozone)
+
+#The attStats function creates a data frame containing each attribute’s Z score statistics andthe fraction of random forest
+# runs in which this attribute was more important than the most important shadow one
+attStats(Boruta.Ozone) # attStats gives the Z score for all the variables
+
+#For easy transfer of Boruta results to other classifiers and tools, the Boruta package contains functions that extract the
+# results and convert them into a convenient form. The getConfirmedFormula and getNonRejectedFormula create a formula object
+# that defines a model based respectively only on confirmed or on confirmed and tentative attributes:
+getConfirmedFormula(Boruta.Ozone)
+getNonRejectedFormula(Boruta.Ozone)
+
+
+#Due to the fact that the number of random forest runs during Boruta is limited by the maxRuns argument, the calculation can
+# be forced to stop prematurely, when there are still attributes which are judged neither to be confirmed nor rejected — and 
+# thus finally marked tentative.
+set.seed(1)
+Boruta.Short = Boruta(V4 ~ ., data = Ozone, maxRuns = 12)
+
+#After 11 iterations; 9 attributes confirm important, 1 attribute confirmed unimportant, 2 tentative attri
+# One should consider increasing the maxRuns parameter if tentative attributes are left.
+Boruta.Short
+plot(Boruta.Short)
+attStats(Boruta.Short)
+
+
