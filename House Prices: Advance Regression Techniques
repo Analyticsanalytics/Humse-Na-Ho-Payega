@@ -1,4 +1,121 @@
 
+##############      RMSLSE SCORE: 0.145    ####################################
+rm(list = ls())
+setwd("//home//sohail//Desktop/Kaggle Competition//House Prices: Kaggle")
+list.files()
+
+#############  1. Making a single variable    ######################
+train = read.csv("train.csv", stringsAsFactors = FALSE)
+test = read.csv("test.csv", stringsAsFactors = FALSE)
+str(train)
+summary(train$SalePrice)
+test$SalePrice = rep(0, nrow(test))
+Id = test$Id
+df = rbind(train, test)
+sort(colSums(is.na(df)))
+
+#########   Coding of Missing Values    ############
+##Some NA values are actually None. Other have been replaced with majority class or median
+summary(df$PoolQC)
+table(df$LotFrontage)
+df$PoolQC[is.na(df$PoolQC)] = "None"
+df$MiscFeature[is.na(df$MiscFeature)] = "None"
+df$Alley[is.na(df$Alley)] = "None"
+df$Fence[is.na(df$Fence)] = "None"
+df$FireplaceQu[is.na(df$FireplaceQu)] = "None"
+df$GarageCond[is.na(df$GarageCond)] = "None"
+df$GarageQual[is.na(df$GarageQual)] = "None"
+df$GarageFinish[is.na(df$GarageFinish)] = "None"
+df$GarageYrBlt[is.na(df$GarageYrBlt)] = "None"
+df$GarageType[is.na(df$GarageType)] = "None"
+
+df$BsmtExposure[is.na(df$BsmtExposure)] = "None"
+df$BsmtCond[is.na(df$BsmtCond)] = "None"
+df$BsmtQual[is.na(df$BsmtQual)] = "None"
+df$BsmtFinType1[is.na(df$BsmtFinType1)] = "None"
+df$BsmtFinType2[is.na(df$BsmtFinType2)] = "None"
+
+summary(df$GarageArea)
+df$MasVnrType[is.na(df$MasVnrType)] = "None"
+df$MasVnrArea[is.na(df$MasVnrArea)] = 0.0
+df$MSZoning[is.na(df$MSZoning)] = "RL"
+df$Functional[is.na(df$Functional)] = "Typ"
+
+df$BsmtFinSF1[is.na(df$BsmtFinSF1)] = 368.5
+df$BsmtFinSF2[is.na(df$BsmtFinSF2)] = 0.0
+df$BsmtUnfSF[is.na(df$BsmtUnfSF)] = 467.0
+df$TotalBsmtSF[is.na(df$TotalBsmtSF)] = 989.5
+df$BsmtFullBath[is.na(df$BsmtFullBath)] = 0.000 
+df$BsmtHalfBath[is.na(df$BsmtHalfBath)] = 0.000
+
+df$Utilities = NULL #Since all observations from same lavel except one
+df$SaleType[is.na(df$SaleType)] = "WD"
+df$GarageArea[is.na(df$GarageArea)] = 480.0
+df$GarageCars[is.na(df$GarageCars)] = 2.0
+df$KitchenQual[is.na(df$KitchenQual)] = "TA"
+df$Electrical[is.na(df$Electrical)] = "SBrkr"
+df$Exterior1st[is.na(df$Exterior1st)] = "VinylSd"
+df$Exterior2nd[is.na(df$Exterior2nd)] = "VinylSd"
+
+
+table(df$Exterior2nd)
+summary(df$GarageCars)
+df$LotFrontage = as.numeric(df$LotFrontage)
+df$LotFrontage[is.na(df$LotFrontage)] = median(df$LotFrontage, na.rm = TRUE)
+
+
+sort(colSums(is.na(df)))
+
+df1 = df
+
+#############################################################################
+
+# Correlation with the response variable doesn't make much sense
+df_num = df[sapply(df, function(x) is.numeric(x))]
+cor(df$SalePrice, df_num)
+
+#CHanging character variables into factor
+df1[sapply(df1, function(x) is.character(x))] = lapply(df1[sapply(df1, function(x) is.character(x))], factor)
+
+summary(df1$YrSold)
+cor(df1$SalePrice, df1$YrSold)
+cor(df1$SalePrice, df1$YearRemodAdd)
+hist(df1$YearBuilt)
+
+# Max Year is 2010. Subtracting date vars from it to have consistency
+df1$YrsBlt1 = df1$YearBuilt -2010
+df1$YrsRemAdd = df1$YearRemodAdd -2010
+df1$YrsSold1 = df1$YrSold - 2010
+df1$GarageYrBlt= NULL
+
+df1[,c("YearBuilt", "YearRemodAdd", "YrSold")] = NULL
+
+
+test1 = df1[df1$SalePrice==0,]
+train1 = df1[df1$SalePrice != 0,]
+test1$SalePrice = NULL
+train1$Id= NULL
+test$Id = NULL
+
+Model = lm(SalePrice ~., data = train1)
+summary(Model)
+names(Model)
+pred = predict(Model, newdata = test1)
+summary(pred)
+submission = data.frame(Id, SalePrice = pred)
+write.csv(submission, "lm.csv", row.names = FALSE)
+
+Model1 = lm(SalePrice ~ MSSubClass+MSZoning+LotArea+Street+Neighborhood+Condition1
+            +BldgType+OverallQual+OverallCond+RoofStyle+RoofMatl+MasVnrArea+ExterQual+BsmtQual
+            +BsmtExposure+BsmtFinSF1+BsmtFinSF2+X1stFlrSF+X2ndFlrSF+BedroomAbvGr+
+              Fireplaces+KitchenQual, data = train1)
+summary(Model1)
+pred1 = predict(Model1, newdata = test1)
+summary(pred1)
+submission = data.frame(Id, SalePrice = pred1)
+write.csv(submission, "lm1.csv", row.names = FALSE)
+
+
 
 ################## RMSLE Score ### 0.14974
 rm(list = ls())
