@@ -42,3 +42,18 @@ plot(Boruta.Short)
 attStats(Boruta.Short)
 
 
+###############  Alternative Method of BORUTA
+set.seed(13)
+bor.results <- Boruta(Ozone,Ozone$V4,
+                      maxRuns=101,
+                      doTrace=0)
+
+print(bor.results)
+getSelectedAttributes(bor.results)
+
+library(dplyr)
+options(width=125)
+arrange(cbind(attr=rownames(attStats(bor.results)), attStats(bor.results)),desc(medianImp))
+
+
+
