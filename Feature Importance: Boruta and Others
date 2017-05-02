@@ -1,5 +1,17 @@
 
+For the implementation, the Boruta package relies on a random forest classification algorithm. This provides an intrinsic measure of the
+importance of each feature, known as the Z score. While this score is not directly a statistical measure of the significance of the
+feature, we can compare it to random permutations of (a selection of) the variables to test if it is higher than the scores from random
+variables. This is the essence of the implementation in Boruta
 
+LIMITATIONS OF BORUTA:
+--It only works with classification (factor) target variables. I am not sure why: as far as I remember, the random forest algorithm also
+  provides a variable significance score when it is used as a predictor, not just when it is run as a classifier.
+--It does not handle missing (NA) values at all. This is quite a problem when working with real data sets, and a shame as random forests
+  are in principle very good at handling missing values. A simple re-write of the package using the party package instead of randomForest
+  should be able to fix this issue.
+--It does not seem to be completely stable. I have crashed it on several real-world data sets and am working on a minimal set to send to
+  the authors.
 
 
 #########################    BORUTA: FEATURE IMPORTANCE EXTRACTION    #######################################
